@@ -1,7 +1,6 @@
 from datetime import datetime
 from datetime import timedelta
 from System.Collections.Generic import List
-from Scripts.glossary.enemies import GetNpcNotorieties
 import re
 import os
 import math
@@ -67,7 +66,7 @@ def getNpcByName(npcName, range = 15):
     enemyFilter.Enabled = True
     enemyFilter.RangeMin = 0
     enemyFilter.RangeMax = range
-    enemyFilter.Notorieties = GetNpcNotorieties()
+    enemyFilter.Notorieties = List[Byte](Byte(7))
     enemyFilter.CheckIgnoreObject = True
     enemyFilter.Name = npcName
     enemies = Mobiles.ApplyFilter( enemyFilter )
@@ -119,7 +118,7 @@ def renderGump(timers):
     fifthRow = 310
     Gumps.AddLabel(gd,posx + secondRow,0,5, '| nmb ready')
     Gumps.AddLabel(gd,posx + thirdRow,0,5, '| visited')
-    Gumps.AddLabel(gd,posx + fourthRow,0,5, '| BOD in')
+    Gumps.AddLabel(gd,posx + fourthRow,0,5, '| bod in')
     Gumps.AddLabel(gd,posx + fifthRow,0,5, '| all in')
     for itemKey,itemValue in timers.items():
         Gumps.AddLabel(gd,posx,posy,5, itemKey)
