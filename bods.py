@@ -98,8 +98,31 @@ def fixDoublingNpcs(npcName):
         return 'blacksmith'
     return npcName
     
-
-bodTimers = readData()
+def handleBodGump(timeout = False):
+    gumpFarm = 150663902
+    gumpTamer = 364681892
+    gumpNormalBod = 2611865322
+    gumpsBods = [gumpFarm, gumpTamer, gumpNormalBod]
+    if timeout:
+        Timer.Create('bod gump timeout', timeout)#timeout
+    foundGump = 999911115555 #timeout, default value. hope no gump uses it
+    Misc.Pause(1000)
+    for gumpBod in gumpsBods:
+        Misc.SendMessage(Gumps.HasGump(gumpBod))
+        Misc.Pause(100)
+        if Gumps.HasGump(gumpBod):
+            Gumps.SendAction(gumpBod, 1)
+            Misc.Pause(500)
+            #cleanup, uo for some reasons keeps gumps open after we click them
+            Gumps.CloseGump(gumpBod)
+            return True
+    if timeout:
+        remaining = Timer.Remaining('bod gump timeout')
+        if remaining > 0:
+            return False
+    handleBodGump(timeout) #cursed :D 
+      
+    
 
 def renderGump(timers):
     gd = Gumps.CreateGump(movable=True,closable=True,resizeable=True)
@@ -147,7 +170,6 @@ def renderGump(timers):
         if readyLast < timedelta(minutes=0):
                 readyLastColor = 38
                 readyLast = timedelta(minutes=0)
-        Misc.SendMessage(readyAt - datetime.now())
         Gumps.AddLabel(gd,posx + fourthRow,posy,5, "| ")
         Gumps.AddLabel(gd,posx + fourthRow+10,posy,readyNextColor,':'.join(str(readyNext).split(':')[:2]))
         Gumps.AddLabel(gd,posx + fifthRow,posy,5, "| ")
@@ -184,23 +206,8 @@ while True:
                 Misc.ContextReply(who.Serial, 4)
             else:
                 Misc.ContextReply(who.Serial, 1)
-            gumpFarm = 150663902
-            gumpTamer = 364681892
-            gumpNormalBod = 2611865322
-            Timer.Create('bod gump timeout', 2*1000)#timeout
-            foundGump = 999911115555 #timeout, default value. hope no gump uses it
-            while not Gumps.HasGump(gumpFarm) and not Gumps.HasGump(gumpNormalBod) and Timer.Check('bod gump timeout'):
-                Misc.Pause(250)
-            if Gumps.HasGump(gumpFarm):
-                foundGump = gumpFarm
-            if Gumps.HasGump(gumpNormalBod):
-                foundGump = gumpNormalBod
-            if Gumps.HasGump(gumpTamer):
-                foundGump = gumpTamer    
-                
-            if foundGump != 999911115555:
-                Gumps.WaitForGump(foundGump, 2000)
-                Gumps.SendAction(foundGump, 1)
+            Misc.Pause(500)
+            handleBodGump()
             Misc.Pause(500)
     
     jurnal = lookForTimer()
