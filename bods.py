@@ -44,14 +44,16 @@ def writeNpcData(data):
     with open(dataNpcFileLocation, 'wb') as fp:
         pickle.dump(data, fp)
             
-def lookForTimer():
+def lookForTimer(createTimer = True, clearAfter = True):
     journalText = Journal.GetLineText(stringWaitForBod, True)
     journalList = journalText.split(":")
     if (len(journalList)>1):
-        Timer.Create(journalList[0],60*1000)
-        Journal.Clear(Journal.GetLineText(stringWaitForBod))
+        if createTimer:
+            Timer.Create(journalList[0],60*1000)
+        if clearAfter:
+            Journal.Clear(Journal.GetLineText(stringWaitForBod))
         return journalList
-    return ""
+    return False
     
 def cleanUpJournal():
     journalText = Journal.GetLineText(stringWaitForBod, True)
@@ -100,15 +102,15 @@ def fixDoublingNpcs(npcName):
     
 def handleBodGump(timeout = False):
     gumpFarm = 150663902
+    gumpFarmOther = 3788093160
     gumpTamer = 364681892
     gumpNormalBod = 2611865322
-    gumpsBods = [gumpFarm, gumpTamer, gumpNormalBod]
+    gumpCook = 3188567326
+    gumpsBods = [gumpFarm, gumpFarmOther, gumpTamer, gumpNormalBod, gumpCook]
     if timeout:
         Timer.Create('bod gump timeout', timeout)#timeout
     foundGump = 999911115555 #timeout, default value. hope no gump uses it
-    Misc.Pause(1000)
     for gumpBod in gumpsBods:
-        Misc.SendMessage(Gumps.HasGump(gumpBod))
         Misc.Pause(100)
         if Gumps.HasGump(gumpBod):
             Gumps.SendAction(gumpBod, 1)
@@ -207,11 +209,12 @@ while True:
             else:
                 Misc.ContextReply(who.Serial, 1)
             Misc.Pause(500)
-            handleBodGump()
+            if not lookForTimer(createTimer = False, clearAfter = False):
+                handleBodGump(2000)
             Misc.Pause(500)
     
     jurnal = lookForTimer()
-    if jurnal != "":
+    if jurnal is not False:
         if jurnal[0] is not None:
             npcName = getNpcByName(jurnal[0])
             if npcName is not None:
