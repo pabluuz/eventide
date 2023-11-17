@@ -16,6 +16,9 @@ stringWaitForBod = "An offer may be available"
 gmpId = 777666
 #dateStandard = "%m/%d %H:%M" #soccer means kicking ball
 dateStandard = "%d/%m %H:%M" #football means kicking ball
+BODItemID = 0x2258
+BODBookItemID = 0x2259
+BODBookGumps = [744719699, 1644669202, 1425364447]
 
 def toSeconds(date):
     return time.mktime(date.timetuple()) 
@@ -89,6 +92,17 @@ def calculateNumberOfReadyBods(timeChecked, timeRemaining):
     deedswaitingFloat = (timediff - timeRemaining) / 360
     return int(math.floor(deedswaitingFloat)+1)
     
+def checkForBodItems():
+    while Items.ContainerCount(Player.Backpack.Serial,BODItemID,-1,True) > 0:
+        for bodBook in Items.FindAllByID(BODBookItemID,-1,Player.Backpack.Serial,0):
+            Misc.WaitForContext(bodBook.Serial, 1000)
+            Misc.ContextReply(bodBook.Serial, 2)
+            Misc.Pause(500)
+    for BODGump in BODBookGumps:
+        if Gumps.HasGump(BODGump):
+            Gumps.CloseGump(BODGump)
+            Misc.Pause(500)
+    
 def fixDoublingNpcs(npcName):
     npcName = re.sub('\ guildmaster$', '', npcName)
     npcName = re.sub('\ guildmistress$', '', npcName)
@@ -106,6 +120,7 @@ def handleBodGump(timeout = False):
     gumpTamer = 364681892
     gumpNormalBod = 2611865322
     gumpCook = 3188567326
+    gumpTamerOther = 813396392
     gumpsBods = [gumpFarm, gumpFarmOther, gumpTamer, gumpNormalBod, gumpCook]
     if timeout:
         Timer.Create('bod gump timeout', timeout)#timeout
@@ -186,6 +201,7 @@ bodTimers = readData()
 bodNpcs = readNpcData()
 renderGump(bodTimers)
 Timer.Create('refreshTimer',1*60*1000)
+Timer.Create('checkForBodItemsTimer',1*1000)
 while cleanUpJournal():
     Misc.Pause(100) #clean up from bod messages. leave rest of messages alone
     
@@ -200,6 +216,9 @@ while True:
     if not Timer.Check('refreshTimer'):
         renderGump(bodTimers)
         Timer.Create('refreshTimer',1*60*1000) 
+    if not Timer.Check('checkForBodItemsTimer'):
+        checkForBodItems()
+        Timer.Create('checkForBodItemsTimer',10*1000) 
     for key, value in bodNpcs.items():
         who = getNpcByName(value, 2)
         if who and not Timer.Check(value):
@@ -234,3 +253,9 @@ while True:
                     bodNpcs[npcFullName] = bodTimers[npc]['name'] #ya, key = val. pickle returns dict not list
                     writeNpcData(bodNpcs)
     Misc.Pause(1000)
+    
+    
+    
+    
+Misc.WaitForContext(0x4044947F, 10000)
+Misc.ContextReply(0x4044947F, 2)
