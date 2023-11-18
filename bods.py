@@ -121,7 +121,7 @@ def handleBodGump(timeout = False):
     gumpNormalBod = 2611865322
     gumpCook = 3188567326
     gumpTamerOther = 813396392
-    gumpsBods = [gumpFarm, gumpFarmOther, gumpTamer, gumpNormalBod, gumpCook]
+    gumpsBods = [gumpFarm, gumpFarmOther, gumpTamer, gumpNormalBod, gumpCook, gumpTamerOther]
     if timeout:
         Timer.Create('bod gump timeout', timeout)#timeout
     foundGump = 999911115555 #timeout, default value. hope no gump uses it
