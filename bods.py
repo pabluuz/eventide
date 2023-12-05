@@ -1,3 +1,4 @@
+from AutoComplete import *
 from datetime import datetime
 from datetime import timedelta
 from System.Collections.Generic import List
@@ -129,7 +130,7 @@ def handleBodGump(timeout = False):
         Misc.Pause(100)
         if Gumps.HasGump(gumpBod):
             Gumps.SendAction(gumpBod, 1)
-            Misc.Pause(500)
+            Misc.Pause(250)
             #cleanup, uo for some reasons keeps gumps open after we click them
             Gumps.CloseGump(gumpBod)
             return True
@@ -164,6 +165,8 @@ def renderGump(timers):
         Gumps.AddLabel(gd,posx,posy,5, itemKey)
         Gumps.AddLabel(gd,posx + secondRow,posy,5, "| ")
         numberOfReadyBods = calculateNumberOfReadyBods(itemValue['timeChecked'], itemValue['time'])
+        if numberOfReadyBods > 3:
+            numberOfReadyBods = 3 #dont draw more
         for i in range(numberOfReadyBods):
             Gumps.AddItem(gd,posx + secondRow + (i*20),posy,0x2DB1)
             #Gumps.AddItem(gd,x,y,itemID,hue)
@@ -216,9 +219,6 @@ while True:
     if not Timer.Check('refreshTimer'):
         renderGump(bodTimers)
         Timer.Create('refreshTimer',1*60*1000) 
-    if not Timer.Check('checkForBodItemsTimer'):
-        checkForBodItems()
-        Timer.Create('checkForBodItemsTimer',10*1000) 
     for key, value in bodNpcs.items():
         who = getNpcByName(value, 2)
         if who and not Timer.Check(value):
@@ -227,10 +227,14 @@ while True:
                 Misc.ContextReply(who.Serial, 4)
             else:
                 Misc.ContextReply(who.Serial, 1)
-            Misc.Pause(500)
+            Misc.Pause(250)
             if not lookForTimer(createTimer = False, clearAfter = False):
                 handleBodGump(2000)
-            Misc.Pause(500)
+            else:
+                if not Timer.Check('checkForBodItemsTimer'):
+                    checkForBodItems()
+                    Timer.Create('checkForBodItemsTimer',10*1000) 
+            #Misc.Pause(50)
     
     jurnal = lookForTimer()
     if jurnal is not False:
